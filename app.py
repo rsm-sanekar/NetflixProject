@@ -202,29 +202,27 @@ def dashboard_1_content_universe(df, filters):
     
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     
-    # Hero Section - Big Poster + Small Quote
+    # Hero Section - Horizontal Backdrop + Quote
     st.markdown('<div style="margin: 20px 0;"></div>', unsafe_allow_html=True)
     
     # Featured title (top-rated)
     featured_title = df_filtered.nlargest(1, "vote_average").iloc[0]
     
-    # Center the poster
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if featured_title["poster_url"]:
-            st.image(featured_title["poster_url"], use_container_width=True)
-        
-        # Small quote below
-        st.markdown(f"""
-        <div style="text-align: center; margin-top: 20px;">
-            <div style="font-size: 1.1rem; color: #E50914; font-style: italic; margin-bottom: 10px;">
-                "{featured_title.get('tagline', 'Discover the most acclaimed content in our catalog')}"
-            </div>
-            <div style="font-size: 1rem; color: #B3B3B3;">
-                — {featured_title['title']} | {featured_title['primary_genre']}
-            </div>
+    # Use backdrop (horizontal) instead of poster (vertical)
+    if featured_title["backdrop_url"]:
+        st.image(featured_title["backdrop_url"], use_container_width=True)
+    
+    # Quote below backdrop
+    st.markdown(f"""
+    <div style="text-align: center; margin-top: 20px; margin-bottom: 30px;">
+        <div style="font-size: 1.3rem; color: #E50914; font-style: italic; margin-bottom: 12px; line-height: 1.5;">
+            "{featured_title.get('tagline', 'Discover the most acclaimed content in our catalog')}"
         </div>
-        """, unsafe_allow_html=True)
+        <div style="font-size: 1.1rem; color: #B3B3B3;">
+            — {featured_title['title']} | {featured_title['primary_genre']}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Movie/TV Tabs
     tab1, tab2 = st.tabs(["📽️ Movies", "📺 TV Shows"])
