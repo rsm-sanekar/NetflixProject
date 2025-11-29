@@ -167,7 +167,7 @@ def display_poster_grid(df, limit=12, cols=4):
                 with columns[col_idx]:
                     p = posters.iloc[idx]
                     if p["poster_url"]:
-                        st.image(p["poster_url"], use_container_width=True)
+                        st.image(p["poster_url"], width="stretch")
                         st.markdown(f'<div style="text-align: center; color: #FFFFFF; font-size: 0.9rem; margin-top: 8px;">{p["title"][:30]}</div>', unsafe_allow_html=True)
                         st.markdown(f'<div style="text-align: center; color: #B3B3B3; font-size: 0.8rem;">⭐ {p["vote_average"]:.1f} | 🔥 {p["popularity"]:.0f}</div>', unsafe_allow_html=True)
 
@@ -205,18 +205,42 @@ def dashboard_1_content_universe(df, filters):
     # Hero Section - Horizontal Backdrop + Quote
     st.markdown('<div style="margin: 20px 0;"></div>', unsafe_allow_html=True)
     
-    # Featured title (top-rated)
-    featured_title = df_filtered.nlargest(1, "vote_average").iloc[0]
+    # Featured: The Shawshank Redemption - Top rated movie with iconic backdrop
+    # Using a specific high-quality film instead of random selection
+    shawshank = df_filtered[df_filtered["title"].str.contains("Shawshank", case=False, na=False)]
     
-    # Use backdrop (horizontal) instead of poster (vertical)
+    if len(shawshank) > 0:
+        featured_title = shawshank.iloc[0]
+    else:
+        # Fallback to top-rated if Shawshank not found
+        featured_title = df_filtered.nlargest(1, "vote_average").iloc[0]
+    
+    # Display backdrop
     if featured_title["backdrop_url"]:
-        st.image(featured_title["backdrop_url"], use_container_width=True)
+        st.image(featured_title["backdrop_url"], width="stretch")
+    
+    # Quote from the actual movie
+    movie_quotes = {
+        "The Shawshank Redemption": "Hope is a good thing, maybe the best of things, and no good thing ever dies.",
+        "Forrest Gump": "Life is like a box of chocolates. You never know what you're gonna get.",
+        "The Godfather": "I'm gonna make him an offer he can't refuse.",
+        "Inception": "You mustn't be afraid to dream a little bigger, darling.",
+        "Interstellar": "We used to look up at the sky and wonder at our place in the stars. Now we just look down and worry about our place in the dirt.",
+        "The Dark Knight": "Why so serious?",
+        "Pulp Fiction": "The path of the righteous man is beset on all sides by the inequities of the selfish and the tyranny of evil men.",
+        "Fight Club": "The things you own end up owning you.",
+        "The Matrix": "There is a difference between knowing the path and walking the path.",
+        "Goodfellas": "As far back as I can remember, I always wanted to be a gangster."
+    }
+    
+    # Get quote for this specific movie or use tagline
+    movie_quote = movie_quotes.get(featured_title['title'], featured_title.get('tagline', 'Discover the most acclaimed content in our catalog'))
     
     # Quote below backdrop
     st.markdown(f"""
     <div style="text-align: center; margin-top: 20px; margin-bottom: 30px;">
         <div style="font-size: 1.3rem; color: #E50914; font-style: italic; margin-bottom: 12px; line-height: 1.5;">
-            "{featured_title.get('tagline', 'Discover the most acclaimed content in our catalog')}"
+            "{movie_quote}"
         </div>
         <div style="font-size: 1.1rem; color: #B3B3B3;">
             — {featured_title['title']} | {featured_title['primary_genre']}
@@ -259,7 +283,7 @@ def dashboard_1_content_universe(df, filters):
                     height=450
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
                 
                 create_insight_panel("Market Composition Insights", [
                     f"<span class='insight-highlight'>{genre_dist.index[0]}</span> dominates with {genre_dist.values[0]} titles ({genre_dist.values[0]/len(movies)*100:.1f}% market share).",
@@ -299,7 +323,7 @@ def dashboard_1_content_universe(df, filters):
                     showlegend=False
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
                 
                 create_insight_panel("Quality-Popularity Dynamics", [
                     "<span class='insight-highlight'>Top-right quadrant</span> = Sweet Spot: High popularity AND high quality. These are proven winners.",
@@ -344,7 +368,7 @@ def dashboard_1_content_universe(df, filters):
                     height=450
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
             
             with col2:
                 st.subheader("TV Genre Performance Matrix")
@@ -377,7 +401,7 @@ def dashboard_1_content_universe(df, filters):
                     showlegend=False
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
             
             st.subheader("Top Performing TV Shows")
             st.markdown("**Grid Analysis:** Highest-engagement TV shows. Compare casting, themes, and formats against movie top performers to understand format-specific success factors.")
@@ -436,7 +460,7 @@ def dashboard_2_performance_deepdive(df, filters):
             legend=dict(title="Status", font=dict(color='#FFFFFF'))
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         anomaly_count = df_copy['is_anomaly'].sum()
         create_insight_panel("Statistical Outliers Detected", [
@@ -470,7 +494,7 @@ def dashboard_2_performance_deepdive(df, filters):
             height=450
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         pop_vote_corr = corr_data.loc['popularity', 'vote_count']
         pop_rating_corr = corr_data.loc['popularity', 'vote_average']
@@ -513,7 +537,7 @@ def dashboard_2_performance_deepdive(df, filters):
             height=400
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         best_month = monthly_perf.loc[monthly_perf["engagement_score"].idxmax(), "month_name"]
         worst_month = monthly_perf.loc[monthly_perf["engagement_score"].idxmin(), "month_name"]
@@ -547,7 +571,7 @@ def dashboard_2_performance_deepdive(df, filters):
             coloraxis_colorbar=dict(title="Rating", tickfont=dict(color='#FFFFFF'))
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         create_insight_panel("Engagement Correlation Findings", [
             "Strong positive correlation: More votes = Higher popularity (as expected from correlation matrix).",
@@ -622,7 +646,7 @@ def dashboard_3_market_opportunities(df, filters):
         legend=dict(title="Market Zone", font=dict(color='#FFFFFF'))
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     
     opp_genres = saturation_data[saturation_data["Zone"] == "Opportunity"]["Genre"].tolist()
     over_genres = saturation_data[saturation_data["Zone"] == "Oversaturated"]["Genre"].tolist()
@@ -684,7 +708,7 @@ def dashboard_3_market_opportunities(df, filters):
         fig.update_yaxes(title_text="Total Engagement", color='#B3B3B3', gridcolor='#262626', secondary_y=False)
         fig.update_yaxes(title_text="Cumulative %", color='#B3B3B3', range=[0, 100], secondary_y=True)
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         vital_few = (genre_totals["Cumulative_%"] <= 80).sum()
         create_insight_panel("The Vital Few Principle", [
@@ -730,7 +754,7 @@ def dashboard_3_market_opportunities(df, filters):
             height=450
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         if not pivot.empty:
             best_cell = pivot.stack().idxmax()
@@ -857,7 +881,7 @@ def dashboard_4_recommendation_copilot(df, filters):
             legend=dict(font=dict(color='#FFFFFF'))
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         create_insight_panel("Investment ROI Curve", [
             f"Your budget level {budget_proxy}/10 predicts <span class='insight-highlight'>{predicted_popularity:.0f}</span> popularity score.",
@@ -907,7 +931,7 @@ def dashboard_4_recommendation_copilot(df, filters):
             showlegend=False
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         create_insight_panel("Multi-Dimensional Profile Analysis", [
             "Radar shows 6 key metrics normalized to 0-100 scale.",
@@ -1020,7 +1044,7 @@ def dashboard_5_predictive_forecasting(df, filters):
         legend=dict(font=dict(color='#FFFFFF'))
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     
     if predictions:
         growth_rates = {g: (p[-1] - p[0]) / p[0] * 100 for g, p in predictions.items() if p[0] > 0}
@@ -1071,7 +1095,7 @@ def dashboard_5_predictive_forecasting(df, filters):
             height=450
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         create_insight_panel("Momentum Analysis", [
             "Velocity = Daily popularity growth rate. Higher = Faster viral spread.",
@@ -1167,7 +1191,7 @@ def dashboard_6_head_to_head(df, filters):
             axis=1
         )
         
-        st.dataframe(comp_df, use_container_width=True, height=300)
+        st.dataframe(comp_df, width="stretch", height=300)
         
         # Overall winner
         score_a = (comp_df[genre_a] > comp_df[genre_b]).sum()
@@ -1253,7 +1277,7 @@ def dashboard_6_head_to_head(df, filters):
                 ]
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             
             create_insight_panel("Head-to-Head Visual Analysis", [
                 f"<span class='insight-highlight'>RED (left) = {genre_a}</span>, <span class='insight-highlight'>BLUE (right) = {genre_b}</span>",
@@ -1300,7 +1324,7 @@ def dashboard_6_head_to_head(df, filters):
                 legend=dict(font=dict(color='#FFFFFF'))
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             
             # Calculate actual trend insights
             trend_direction_a = "growing" if len(trend_a) > 1 and trend_a["engagement_score"].iloc[-1] > trend_a["engagement_score"].iloc[0] else "declining"
