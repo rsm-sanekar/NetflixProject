@@ -1,0 +1,10 @@
+.
+./.streamlit
+./.streamlit/config.toml
+./FILE_TREE.txt
+./FINAL_DELIVERY.md
+./PROJECT_SUMMARY.md
+./README.md
+./START_HERE.md
+./app.py
+./requirements.txt
