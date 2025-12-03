@@ -1353,6 +1353,7 @@ def dashboard_4_recommendation_copilot(df, filters):
         (df_filtered["primary_genre"] == selected_genre)
         & (df_filtered["content_type"] == content_type)
     ].copy()
+    pop_floor = max(df_filtered["popularity"].quantile(0.1), 1)
 
     # Encode quarter from user selection (Q1/Q2/Q3/Q4)
     q_num = int(release_window[1])  # "Q1 (Jan-Mar)" -> 1
@@ -1392,6 +1393,7 @@ def dashboard_4_recommendation_copilot(df, filters):
         avg_rating = genre_data["vote_average"].mean()
         avg_votes = genre_data["vote_count"].mean()
         base_pred = reg_model.predict([[avg_rating, avg_votes]])[0]
+        base_pred = max(base_pred, pop_floor)
 
         # Keep your budget-based adjustment logic
         predicted_popularity = base_pred * (budget_proxy / 5) * 0.8
@@ -1401,6 +1403,7 @@ def dashboard_4_recommendation_copilot(df, filters):
             if len(genre_data) > 0
             else df_filtered["popularity"].mean()
         )
+        base_popularity = max(base_popularity, pop_floor)
         predicted_popularity = base_popularity * (budget_proxy / 5)
 
     # ------------- Hit Probability: RandomForestClassifier -------------
@@ -1478,12 +1481,15 @@ def dashboard_4_recommendation_copilot(df, filters):
         )
 
         budget_range = np.arange(1, 11)
-        base_pop = (
-            predicted_popularity / (budget_proxy / 5)
-            if budget_proxy > 0
-            else predicted_popularity
+        diminishing_curve = np.power(budget_range, 0.82)
+        anchor_idx = int(np.clip(budget_proxy, 1, 10)) - 1
+        anchor_value = diminishing_curve[anchor_idx]
+        base_curve_level = (
+            predicted_popularity / anchor_value if anchor_value else predicted_popularity
         )
-        popularity_forecast = [base_pop * (b / 5) for b in budget_range]
+        popularity_forecast = [
+            max(base_curve_level * curve_val, 0) for curve_val in diminishing_curve
+        ]
 
         fig = go.Figure()
 
